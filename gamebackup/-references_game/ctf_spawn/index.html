@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+   <title>CTF-Spawn</title>
+   <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+   <meta content="utf-8" http-equiv="encoding">
+   <meta name="viewport" content="width=device-width, initial-scale=1">
+   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+   <link rel="shortcut icon" href="ww_favicon.ico" type="image/x-icon" />
+   <link rel="stylesheet" type="text/css" href="css/css.css">
+</head>
+
+<body>
+   <nav class="navbar navbar-default">
+      <div class="container-fluid">
+         <!-- Brand and toggle get grouped for better mobile display -->
+         <div class="navbar-header">
+            <a class="navbar-brand" href="https://ctf-spawn.firebaseapp.com/">CTF-Spawn</a>
+         </div>
+
+         <!-- Collect the nav links, forms, and other content for toggling -->
+         <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+            <ul class="nav navbar-nav navbar-right">
+               <li>
+                  <a href="#" id="name"></a>
+               </li>
+<!--               <li>
+                  <a href="#" id="name"><img id="player_img" src="" class="img-circle"></a>
+               </li>
+-->               <li class="dropdown">
+                  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Options <span class="caret"></span></a>
+                  <ul class="dropdown-menu">
+                     <li><a href="#">Action</a></li>
+                     <li><a href="#">Another action</a></li>
+                     <li><a href="#">Something else here</a></li>
+                     <li role="separator" class="divider"></li>
+                     <li id="signout"><a href="#">Sign Out</a></li>
+                  </ul>
+               </li>
+            </ul>
+         </div>
+         <!-- /.navbar-collapse -->
+      </div>
+      <!-- /.container-fluid -->
+   </nav>
+
+   <button id="login" class="btn btn-default">Sign In</button>
+   <canvas id="canvas"></canvas>
+
+   <div id="chooseopponent" class="panel panel-primary">
+      <div class="panel-heading">
+         <h3 class="panel-title">Choose Your Opponent!</h3>
+      </div>
+      <div id="playerlist" class="panel-body">
+        <div id="playerlist_scrolldiv"></div>
+      </div>
+   </div>
+   
+   <div id="chooseuid" class="panel panel-primary">
+      <div class="panel-heading">
+         <h3 class="panel-title">Create a UserID!</h3>
+      </div>
+      <div class="panel-body">
+         <div class="input-group">
+            <input id="chosenuid" type="text" class="form-control" placeholder="Create a User ID">
+            <span class="input-group-btn">
+           <button id="chooseuidbutton" class="btn btn-default" type="button">Go!</button>
+         </span>
+         </div><!-- /input-group -->
+      </div>
+   </div>
+
+   <div id="script">
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
+      <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+      <script src="https://www.gstatic.com/firebasejs/3.3.0/firebase.js"></script>
+      <script src="https://www.gstatic.com/firebasejs/3.3.0/firebase-app.js"></script>
+      <script src="https://www.gstatic.com/firebasejs/3.3.0/firebase-auth.js"></script>
+      <script src="https://www.gstatic.com/firebasejs/3.3.0/firebase-database.js"></script>
+      <script type="text/javascript" src="javascript/js.js"></script>
+      <script>
+         // Initialize Firebase
+         var config = {
+            apiKey: "AIzaSyDjPKwMTMB3QnoUwmJIp4LQug51OwKToR8",
+            authDomain: "ctf-spawn.firebaseapp.com",
+            databaseURL: "https://ctf-spawn.firebaseio.com",
+            storageBucket: "ctf-spawn.appspot.com",
+         };
+         firebase.initializeApp(config);
+      </script>
+      <script type="text/javascript">
+         var $ = function(d) {
+            document.getElementById(d);
+         };
+         var provider = new firebase.auth.GoogleAuthProvider();
+         var user;
+         provider.addScope('https://www.googleapis.com/auth/plus.login');
+
+         document.getElementById('login').onclick = function() {
+
+            firebase.auth().signInWithPopup(provider).then(function(result) {
+               // This gives you a Google Access Token. You can use it to access the Google API.
+               var token = result.credential.accessToken;
+               // The signed-in user info.
+               user = result.user;
+               initialize(user);
+               console.log(user);
+               
+               // Set session id;
+               firebase.database().ref('users/' + user.uid).update({
+                  sessionid: Math.floor(Math.random()*200000000)
+               });
+
+               // Receive From Opponent;
+               var opponentAttackersRef = firebase.database().ref('users/' + user.uid);
+               opponentAttackersRef.on('child_changed', function(data) {
+                  console.log('receiveTransmit-'+user.uid);
+                  console.log(data.val().opponentattackers);
+                  switch(data.val()){
+                     case data.val().opponentattackers:
+                        var newarray = data.val().opponentattackers.split('#');
+      
+                        for(var i = 0; i < newarray.length; i++){
+                           newarray[i].split('-');
+                           drawCircle(newarray[0],newarray[1],newarray[2],colors[5]);
+                        }
+                     break;
+                  }
+                });
+
+               // ...
+            }).catch(function(error) {
+               // Handle Errors here.
+               var errorCode = error.code;
+               var errorMessage = error.message;
+               // The firebase.auth.AuthCredential type that was used.
+               var credential = error.credential;
+               // ...
+            });
+
+         };
+         
+         firebase.database().ref('users/').on('child_changed', function(data) {
+            if (data.key != user.uid) {
+               
+               firebase.database().ref('users/' + data.key).once('value').then(function(snapshot) {
+                  var name = snapshot.child('username').val();
+                  var pic = snapshot.child('profile_picture').val();
+
+                  var div = document.createElement('div');
+                  div.className = 'playerlistitem';
+                  div.id = snapshot.key;
+                  div.onclick = function(){chooseopponent(this.id);};
+                  document.getElementById('playerlist_scrolldiv').appendChild(div);
+                  
+                  var innerdiv = document.createElement('div');
+                  innerdiv.className = 'playerlistitem_name pull-left';
+                  div.appendChild(innerdiv);
+
+                  var divtext = document.createElement('div');
+                  divtext.className = 'pull-left';
+                  divtext.textContent = childSnapshot.val().username;
+                  innerdiv.appendChild(divtext)
+
+                  var img = document.createElement('img');
+                  img.setAttribute('src', pic);
+                  img.className = 'img-circle pull-right';
+                  div.appendChild(img);
+               
+               });
+            }
+         });
+         
+         document.getElementById('chooseuidbutton').onclick = function(){
+            var uid = document.getElementById('chosenuid').value;
+            
+            firebase.database().ref('users/' + user.uid).set({
+               oldsessionid: '',
+               sessionid: '',
+               useronline: '1',
+               username: uid,
+               profile_picture: user.photoURL,
+               googlename: user.displayName,
+               opponent: '',
+               opponentflagrunners: '',
+               opponentattackers: ''
+            });
+            
+            
+            document.getElementById('chooseuid').style.display = 'none';
+            document.getElementById('chooseopponent').style.display = 'block';
+            
+            var query = firebase.database().ref("users").orderByKey();
+            query.once("value").then(function(snapshot) {
+              snapshot.forEach(function(childSnapshot) {
+                 var key = childSnapshot.key;
+                 var childData = childSnapshot.val().username;
+
+                  var div = document.createElement('div');
+                  div.className = 'playerlistitem';
+                  div.id = childSnapshot.key;
+                  div.onclick = function(){chooseopponent(this.id);};
+                  document.getElementById('playerlist_scrolldiv').appendChild(div);
+            
+                  var innerdiv = document.createElement('div');
+                  innerdiv.className = 'playerlistitem_name pull-left';
+                  div.appendChild(innerdiv);
+
+                  var divtext = document.createElement('div');
+                  divtext.className = 'pull-left';
+                  divtext.textContent = childSnapshot.val().username;
+                  innerdiv.appendChild(divtext)
+                  
+                  var img = document.createElement('img');
+                  img.setAttribute('src', childSnapshot.val().profile_picture);
+                  img.className = 'img-circle pull-right';
+                  div.appendChild(img);
+                 
+              });
+            });
+         };
+         
+         function chooseopponent(uid){
+            firebase.database().ref('users/' + user.uid).update({
+               opponent: uid
+            });
+            opponent = uid;
+         }
+
+         document.getElementById('signout').onclick = function(){
+            firebase.database().ref('users/' + user.uid).update({
+               useronline: '0'
+            });
+            document.getElementById('name').innerHTML = '';
+            window.location = 'https://ctf-spawn.firebaseapp.com/';
+
+         }
+
+      </script>
+   </div>
+</body>
+
+</html>

@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>The Dot Game - CTF</title>
+    <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+    <meta content="utf-8" http-equiv="encoding">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+    <link rel="shortcut icon" href="img/flag.ico" type="image/x-icon" />
+    <link rel="stylesheet" type="text/css" href="css/style.css">
+</head>
+
+<body>
+
+    <div id="setup_wrapper">
+        <div id="handlebar">
+            <i class="glyphicon glyphicon-chevron-left" aria-hidden="true"></i>
+        </div>
+
+        <form id="createuser_wrapper">
+            <div class="title">Create a User Name</div>
+            <input id="username" type="text" placeholder="Your Username" required pattern="[A-Za-z0-9]+" /> <input type="submit" id="uid_submit" value="Submit" />
+        </form>
+
+        <form id="creategame_wrapper">
+            <div class="title">Start a New Game</div>
+            <input id="gamename" type="text" placeholder="Game Name" required pattern="[A-Za-z0-9_]+" /> <input type="submit" id="gamename_submit" value="Submit" />
+        </form>
+
+        <form id="joingame_wrapper">
+            <div class="title">Join Game</div>
+            <select id="gamelist" size="5">
+                <option selected value="default">Please choose a game</option>
+            </select>
+            <input type="submit" id="joingame_submit" value="Join Game"><br>
+        </form>
+    </div>
+
+    <div id="gamedata">
+        <div id="server-time"></div>
+        <div id="uid_info"></div>
+        <div id="gname_info"></div>
+        <div id="oname_info"></div>
+        <div id="gamestatus">Setup Pending...</div>
+    </div>
+
+    <div id="wrapper">
+        <div style="width: 400px; margin: 0 auto; height: 400px;">
+            <canvas id="myCanvas" style="border:1px solid #000;"></canvas>
+        </div>
+    </div>
+
+    <div id="scripts">
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+        <script src="js/ctf.js"></script>
+        <script src="js/ctf2.js"></script>
+        <script src="/socket.io/socket.io.js"></script>
+        <script type="text/javascript">
+            
+            var username = '';
+            var gameroom = '';
+            var playerturn = '';
+            var socket = io();
+            var el = document.getElementById('server-time');
+            
+            socket.on('time', function(timeString) {
+                el.innerHTML = 'Server time: ' + timeString;
+            });
+            socket.on('clickresponse', function(data) {
+                if (isEven(data.playerturn)){
+                    document.getElementById(data.cellid).innerHTML = '<div class="gamecell">O</div>';
+                } else {
+                    document.getElementById(data.cellid).innerHTML = '<div class="gamecell">X</div>';
+                }
+            });
+            
+            socket.on('create_user', function(data) {
+                username = $('#username').val();
+                $('#createuser_wrapper').css('display', 'none');
+                $('#uid_info').html('User Name: ' + username); 
+            });
+            
+            socket.on('addgame', function(data) {
+               $('#gamelist').html($('#gamelist').html() + '<option value="' + data + '">' + data + '</option>');
+            });
+            
+            socket.on('addgamefirstload', function(data) {
+                for (var key in data){
+                    $('#gamelist').html($('#gamelist').html() + '<option value="' + key + '">' + key + '</option>');
+                }
+            });
+            
+            socket.on('removegame', function(data) {
+               $('#gamelist option[value="' + data + '"]').remove(); 
+            });
+            
+            socket.on('joingame', function(data){
+               gameroom = data;
+               $('#gname_info').html('Game Name: ' + gameroom);
+            });
+            
+            socket.on('message', function(data){
+                alert(data);
+            });
+            
+            socket.on('opponentname', function(data){
+                $('#oname_info').html('Game Opponent: ' + data);
+                socket.emit('serveropponentname', {'gamename': gameroom, 'username': username});
+                if(flag = 1){
+                    $('#handlebar').trigger('click');
+                }
+            });
+            
+            socket.on('opponentname2', function(data){
+                $('#oname_info').html('Opponent Name: ' + data);
+                if(flag = 1){
+                    $('#handlebar').trigger('click');
+                }
+            });
+            
+            socket.on('winstreak', function(data){
+               data.coordsarray.forEach(function(element,index,array){
+                    if(isEven(data.playerturn) == isEven(playerturn)){
+                        document.getElementById(element).className += ' victoryanimation';
+                    } else {
+                        document.getElementById(element).className += ' loseranimation';
+                    }
+               });
+            });
+            
+            socket.on('playerturn', function(data) {
+                if(playerturn == data){
+                    $('#turn_info').html("It's Your Turn!");
+                } else {
+                    $('#turn_info').html("Opponents Turn...");
+                }
+            });
+            
+        </script>
+    </div>
+</body>
+
+</html>

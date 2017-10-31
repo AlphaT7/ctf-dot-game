@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>The Dot Game - CTF</title>
+    <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+    <meta content="utf-8" http-equiv="encoding">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link async rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+    <link async rel="shortcut icon" href="img/flag.ico" type="image/x-icon" />
+    <link async rel="stylesheet" type="text/css" href="css/style.css">
+</head>
+
+<body>
+
+    <div id="setup_wrapper">
+        <div id="handlebar">
+            <i class="glyphicon glyphicon-cog" aria-hidden="true"></i>
+        </div>
+
+        <form id="createuser_wrapper">
+            <div class="title">Create User Name</div>
+            <input id="username" type="text" placeholder="Your Username" required pattern="[A-Za-z0-9]+" /> <input type="submit" id="uid_submit" value="Submit" />
+        </form>
+
+        <form id="creategame_wrapper">
+            <div class="title">Start a New Game</div>
+            <input id="gamename" type="text" placeholder="Game Name" required pattern="[A-Za-z0-9_]+" /> <input type="submit" id="gamename_submit" value="Submit" />
+        </form>
+
+        <form id="joingame_wrapper">
+            <div class="title">Join Game</div>
+            <select id="gamelist" size="5" required>
+                <option selected value="default">Please choose a game</option>
+            </select><br>
+            <input type="submit" id="joingame_submit" value="Join Game"><br>
+        </form>
+    </div>
+
+    <div id="gamedata">
+        <div id="server-time"></div>
+        <div id="uid_info"></div>
+        <div id="gname_info"></div>
+        <div id="oname_info"></div>
+        <div id="gamestatus">Setup Pending...</div>
+    </div>
+
+    <div id="wrapper">
+
+        <div style="width: 400px; margin: 0 auto; height: 400px;">
+            <canvas id="myCanvas" width="400" height="400" style="border:1px solid #000;"></canvas>
+        </div>
+        <div id="countwrapper">
+            <div id="attackercount">Attackers: 0</div>
+            <div id="flagrunnercount">Flagrunners: 0</div>
+        </div>
+        <div id="message"></div>
+    </div>
+
+    <div id="scripts">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+        <!--<script src="https://code.jquery.com/qunit/qunit-2.4.0.js"></script>-->
+        <!--<script src="bower_components/hamstersjs/src/hamsters.js"></script>-->
+        <script src="/socket.io/socket.io.js"></script>
+        <script src="js/main.js"></script>
+        <!--<script src="js/userevents.js"></script>-->
+        <!--<script src="js/tests.js"></script>-->
+    </div>
+</body>
+
+</html>

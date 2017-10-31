@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Collisions full exercise</title>
+        <style type="text/css">
+            
+            body {
+                background-color: white;
+            }
+            canvas{
+                border: solid black 1px
+            }
+            
+        </style>
+    </head>
+
+    <body>
+        
+        <canvas id="canvas"></canvas>
+        
+        <script type="text/javascript">
+            
+            var canvas = document.getElementById("canvas");
+            var ctx = canvas.getContext("2d");
+            
+            var rects = [];
+            
+            init();// Resize the Canvas
+            
+            var ball = {
+                position: {
+                    x: canvas.width / 2, 
+                    y: canvas.height / 2
+                }, 
+                radius: 20, 
+                velocity: {
+                    xv: 5, 
+                    yv: 5
+                }, 
+                acceleration: 1,
+                
+                drawBall: function(){
+                    ctx.arc(ball.position.x, ball.position.y, ball.radius, 0, 2 * Math.PI);
+                    ctx.fill();
+                }, 
+                
+                moveBall: function(){
+                    this.position.x += this.velocity.xv;
+                    this.position.y += this.velocity.yv;
+                    
+                    if(ball.position.x >= canvas.width - ball.radius){
+                        ball.velocity.xv =- ball.velocity.xv;
+                    }
+                    if(ball.position.x <= ball.radius){
+                        ball.velocity.xv =- ball.velocity.xv;
+                    }
+                    if(ball.position.y >= canvas.height - ball.radius){
+                      ball.velocity.yv =- ball.velocity.yv;
+                    } 
+                    if(ball.position.y <= ball.radius){
+                      ball.velocity.yv =- ball.velocity.yv;
+                    }
+                    ball.position.y += ball.velocity.yv;// Ball Moves up & Down
+                    ball.position.x += ball.velocity.xv; // Ball moes left and right
+                }
+            }; // End ball object creation
+            
+            
+            
+            var rectangle = {
+                position: {
+					x: canvas.width / 2, 
+                    y: canvas.height / 2
+				}, 
+                size: {
+                    width: 50, 
+                    height: 20
+                },  
+				colour: "blue",       
+                drawRectangle: function(){
+					ctx.fillStyle = "blue";
+                    ctx.fillRect(this.position.x, this.position.y, this.size.width, this.size.height);
+                }
+            };
+            
+            
+            function Rectangle(x, y){
+                this.x = x;
+                this.y = y;
+                this.width = 50;
+                this.height = 20;
+                this.drawRect = function(){
+                    ctx.fillStyle = "blue";
+                    ctx.fillRect(this.x, this.y, this.width, this.height); 
+                }
+                this.active = true;
+                this.hit = function(){
+                    if(this.x || this.y == ball.radius){
+                        this.active = false;
+                    }
+                }
+            }
+            
+            
+            function init(){
+                canvas.width = 1000;
+                canvas.height = 600;
+                for (var i = 0; i < 10; i++)
+                    // Creates 10 random Rectangle object instances on the screen
+                    // rects[i] = new Rectangle(Math.random() * canvas.width, Math.random() * canvas.height);
+                    rects[i] = new Rectangle(100*i, 10); // Creates 10 Rectangles at the top, from left to right
+					
+					///////////////////////////////////////////////////////////////////////////////////////////
+					/* We should have some kind of window.requestAnimationFrame(repeatSomething) in this part*/
+					///////////////////////////////////////////////////////////////////////////////////////////
+					
+				// step();
+            } // End init()
+            
+            
+			
+            function step(){
+                // console.log(t);
+                ctx.beginPath();
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ball.drawBall();
+                ball.moveBall();
+                    
+                for (var i = 0; i < 10; i++)
+                    rects[i].drawRect();
+                    
+                /*for (var i = 0; i < 10; i++){
+                    rects[i].hit();
+                    console.log("Object was hit!");
+                }
+                for (var i = 0; i < 10; i++){
+                    if (rects[i].active == false){
+                        rects.splice(i, 1);
+                    }
+                }
+                for (var i = 0; i < 10; i++)
+                    rects[i].drawRect();*/
+					
+					
+					
+                
+                // rectangle.drawRectangle();
+				/*
+					The step part of the parameter is called first and the associated Memory address given in RAM....
+					.... is pointed to and then the requestAF is executed.  
+				*/
+                window.requestAnimationFrame(step);
+            } // End step()
+            
+            step(); // Start Animation
+                 
+        </script> 
+        
+    </body>
+</html>
+
+    Contact GitHub API Training Shop Blog About 
+
+    © 2016 GitHub, Inc. Terms Privacy Security Status Help 
+
